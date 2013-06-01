@@ -2,9 +2,9 @@
 header("Content-Type: text/plain");
 
 //WordPress Config file
-$filePath =  "test_configs/wp-config.php";
+// $filePath =  "test_configs/wp-config.php";
 //or Bitrix DB connection file
-// $filePath =  "test_configs/bitrix-dbconn.php";
+$filePath =  "test_configs/bitrix-dbconn.php";
 
 $filters = "convert.quoted-printable-encode|convert.iconv.CP1254%2FUNICODEBIG|convert.base64-encode|convert.iconv.CP1254%2FUNICODEBIG|convert.base64-encode|string.rot13|convert.base64-decode|string.rot13|convert.base64-encode|string.rot13|convert.base64-decode";
 
